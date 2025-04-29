@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://neondb_owner:npg_IEptLRi1l2BY@ep-icy-meadow-a5z4zqgi-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+}
+
+model RegisteredUser {
+  phoneNumber String  @id  // Primary key (Unique number)
+  firstName   String
+  lastName    String
+  email       String  @unique
+  password    String
+  status      Boolean @default(true) // Active/inactive user
+  contacts    Contact[] 
+  spamCount   Int      @default(0)
+}
+
+
+model Contact {
+  id          Int    @id @default(autoincrement())
+  owner       RegisteredUser @relation(fields: [ownerPhoneNumber], references: [phoneNumber])
+  ownerPhoneNumber String // The user who saved this contact
+  savedNumber   String  // The contact number saved by this user
+  savedName     String  // The name saved against this number
+}
+
+model GlobalPhoneData {
+  phoneNumber String @id  // Primary key (Unique number)
+  savedNames  SavedName[] // All names saved for this number
+  spamCount   Int @default(0)
+  notSpamCount Int @default(0)
+}
+
+model SavedName {
+  id          Int    @id @default(autoincrement())
+  phoneNumber String
+  name        String
+  globalData  GlobalPhoneData @relation(fields: [phoneNumber], references: [phoneNumber])
+}
